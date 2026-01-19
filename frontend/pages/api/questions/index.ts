@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 
 type QuestionPart = {
-  label: string;   // "a", "b.i", "b.ii"
+  label: string;
   text: string;
   marks?: number;
   answerText?: string;
@@ -17,14 +17,9 @@ type Question = {
   createdAt: string;
 };
 
-declare global {
-  // eslint-disable-next-line no-var
-  var __tangyuan_questions: Question[] | undefined;
-}
-
 function getStore(): Question[] {
   if (!global.__tangyuan_questions) global.__tangyuan_questions = [];
-  return global.__tangyuan_questions;
+  return global.__tangyuan_questions as unknown as Question[];
 }
 
 function uid() {
@@ -32,7 +27,7 @@ function uid() {
 }
 
 function sumMarks(parts: QuestionPart[]) {
-  const nums = parts.map(p => p.marks).filter((m): m is number => typeof m === "number");
+  const nums = parts.map((p) => p.marks).filter((m): m is number => typeof m === "number");
   return nums.length ? nums.reduce((a, b) => a + b, 0) : undefined;
 }
 
@@ -41,7 +36,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
 
   if (req.method === "GET") {
     const paperId = typeof req.query.paperId === "string" ? req.query.paperId : undefined;
-    const questions = paperId ? store.filter(q => q.paperId === paperId) : store;
+    const questions = paperId ? store.filter((q) => q.paperId === paperId) : store;
     return res.status(200).json({ questions });
   }
 
@@ -52,12 +47,14 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     if (!stemText || typeof stemText !== "string") return res.status(400).json({ error: "stemText required" });
     if (!Array.isArray(parts)) return res.status(400).json({ error: "parts must be an array" });
 
-    const cleanedParts: QuestionPart[] = parts.map((p: any) => ({
-      label: String(p.label ?? ""),
-      text: String(p.text ?? ""),
-      marks: typeof p.marks === "number" ? p.marks : undefined,
-      answerText: typeof p.answerText === "string" ? p.answerText : undefined,
-    })).filter(p => p.label && p.text);
+    const cleanedParts: QuestionPart[] = parts
+      .map((p: any) => ({
+        label: String(p.label ?? ""),
+        text: String(p.text ?? ""),
+        marks: typeof p.marks === "number" ? p.marks : undefined,
+        answerText: typeof p.answerText === "string" ? p.answerText : undefined,
+      }))
+      .filter((p) => p.label && p.text);
 
     const q: Question = {
       id: uid(),

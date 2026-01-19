@@ -1,23 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 
-type Paper = {
-  id: string;
-  title: string;
-  school?: string;
-  year?: number;
-  level?: string;     // Sec 4 / JC2
-  examType?: string;  // prelim/promo/tutorial
-  createdAt: string;
-};
-
-declare global {
-  // eslint-disable-next-line no-var
-  var __tangyuan_papers: Paper[] | undefined;
-}
-
-function getStore(): Paper[] {
+function getStore(): any[] {
   if (!global.__tangyuan_papers) global.__tangyuan_papers = [];
-  return global.__tangyuan_papers;
+  return global.__tangyuan_papers ?? [];
 }
 
 function uid() {
@@ -37,7 +22,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
       return res.status(400).json({ error: "title is required" });
     }
 
-    const paper: Paper = {
+    const paper = {
       id: uid(),
       title,
       school: typeof school === "string" ? school : undefined,
