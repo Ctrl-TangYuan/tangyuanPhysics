@@ -1,17 +1,12 @@
 export default async function Home() {
-  const res = await fetch("http://localhost:3000/api/health", { cache: "no-store" });
-  const text = await res.text();
-
-  let data: any;
-  try {
-    data = JSON.parse(text);
-  } catch {
-    data = { error: "Not JSON returned", first200: text.slice(0, 200) };
-  }
+  // Relative URL works both locally and on Vercel
+  const res = await fetch("/api/health", { cache: "no-store" });
+  const data = await res.json();
 
   return (
     <main style={{ padding: 40, fontFamily: "system-ui" }}>
       <h1>Tangyuan 🍡</h1>
+      <p>First evolution: deployed + API reachable.</p>
       <pre style={{ marginTop: 16, padding: 16, background: "#111", color: "#0f0" }}>
         {JSON.stringify(data, null, 2)}
       </pre>
