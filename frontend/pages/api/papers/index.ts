@@ -1,19 +1,14 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-
-function getStore(): any[] {
-  if (!global.__tangyuan_papers) global.__tangyuan_papers = [];
-  return global.__tangyuan_papers ?? [];
-}
+import { getPapers, setPapers } from "@/lib/redisStore";
 
 function uid() {
   return Math.random().toString(36).slice(2) + Date.now().toString(36);
 }
 
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
-  const store = getStore();
-
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === "GET") {
-    return res.status(200).json({ papers: store });
+    const papers = await getPapers();
+    return res.status(200).json({ papers });
   }
 
   if (req.method === "POST") {
@@ -32,7 +27,10 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
       createdAt: new Date().toISOString(),
     };
 
-    store.unshift(paper);
+    const papers = await getPapers();
+    papers.unshift(paper);
+    await setPapers(papers);
+
     return res.status(201).json({ paper });
   }
 
